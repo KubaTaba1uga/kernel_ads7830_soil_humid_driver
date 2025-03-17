@@ -22,6 +22,8 @@
 static ssize_t show_humidity(struct device *dev, struct device_attribute *attr,
                              char *buf);
 
+static DEFINE_MUTEX(recv_data_lock);
+
 int ads7830_soil_humid_init_sysfs(struct ads7830_soil_humid_data *data) {
   int name_max = 32;
   char *name_buf;
@@ -46,6 +48,8 @@ int ads7830_soil_humid_init_sysfs(struct ads7830_soil_humid_data *data) {
       return err;
     }
   });
+
+  mutex_init(&recv_data_lock);
 
   dev_set_drvdata(&data->client->dev, data);
 
@@ -80,12 +84,19 @@ static ssize_t show_humidity(struct device *dev, struct device_attribute *attr,
     return -ENOENT;
   }
 
+  mutex_lock(&recv_data_lock);
+
   err = ads7830_soil_humid_receive_data(data, channel);
   if (err) {
     LKM_PRINT_ERR(data->client, "Unable to receive data from %s\n",
                   attr->attr.name);
-    return err;
+    goto cleanup;
   }
 
-  return snprintf(buf, 32, "%d\n", channel->humidity);
+  err = snprintf(buf, 32, "%d\n", channel->humidity);
+
+cleanup:
+  mutex_unlock(&recv_data_lock);
+
+  return err;
 };
