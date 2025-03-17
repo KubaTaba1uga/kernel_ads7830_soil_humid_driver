@@ -1,12 +1,12 @@
+#include <linux/dev_printk.h>
 #include <linux/device.h>
+#include <linux/gfp_types.h>
 #include <linux/i2c.h>
 #include <linux/ktime.h>
 #include <linux/mutex.h>
 
-#include "asm-generic/errno-base.h"
 #include "common.h"
-#include "linux/dev_printk.h"
-#include "linux/gfp_types.h"
+#include "receive_data.h"
 #include "sysfs.h"
 
 #define FOR_EACH_DEV_ATTR(data, func)                                          \
@@ -59,21 +59,33 @@ void ads7830_soil_humid_destroy_sysfs(struct ads7830_soil_humid_data *data) {
 
 static ssize_t show_humidity(struct device *dev, struct device_attribute *attr,
                              char *buf) {
+  struct ads7830_soil_humid_channel_data *channel = NULL;
   struct ads7830_soil_humid_data *data;
-  int channel_number = -1;
+  int err;
+
   data = dev_get_drvdata(dev);
 
+  // Find channel
   FOR_EACH_DEV_ATTR(data, {
     if (_dev_attr == attr) {
-      channel_number = _i;
+      channel = &data->channels_data[_i];
+      channel->channel_number = _i;
+      channel->humidity = -1;
       break;
     };
   });
 
-  if (channel_number == -1) {
-    LKM_PRINT_ERR(data->client, "Unable to find channel number\n");
+  if (channel == NULL) {
+    LKM_PRINT_ERR(data->client, "Unable to find corresponding ADC channel\n");
     return -ENOENT;
   }
 
-  return snprintf(buf, 32, "%d\n", channel_number);
+  err = ads7830_soil_humid_receive_data(data, channel);
+  if (err) {
+    LKM_PRINT_ERR(data->client, "Unable to receive data from %s\n",
+                  attr->attr.name);
+    return err;
+  }
+
+  return snprintf(buf, 32, "%d\n", channel->humidity);
 };
