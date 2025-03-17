@@ -75,4 +75,4 @@ module_i2c_driver(ads7830_soil_humid_driver);
 
 MODULE_AUTHOR("Jakub Buczynski");
 MODULE_DESCRIPTION("Custom soil humidity driver utilising ADS7830");
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("Dual MIT/GPL");
