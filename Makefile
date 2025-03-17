@@ -14,7 +14,7 @@ STRIP := ${CROSS_COMPILE}strip
 
 PWD            := $(shell pwd)
 obj-m          += ${FNAME_C}.o
-ads7830_soil_humid_driver-objs := main.o init_ads7830.o sysfs.o
+ads7830_soil_humid_driver-objs := main.o init_ads7830.o sysfs.o receive_data.o
 
 MYDEBUG ?= n
 DBG_STRIP := y

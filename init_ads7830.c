@@ -15,8 +15,7 @@ int ads7830_soil_humid_init(struct i2c_client *client) {
   data->client = client;
 
   // This functions sets i2c client data so it can be acessed from anwyehre in
-  // this
-  //   i2c device ctx.
+  // this i2c device ctx.
   i2c_set_clientdata(client, data);
 
   return 0;
