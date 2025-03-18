@@ -42,6 +42,7 @@ static int ads7830_soil_humid_probe(struct i2c_client *client) {
 
 static void ads7830_soil_humid_remove(struct i2c_client *client) {
   struct ads7830_soil_humid_data *data;
+
   data = i2c_get_clientdata(client);
 
   ads7830_soil_humid_destroy_sysfs(data);

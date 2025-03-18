@@ -22,8 +22,6 @@
 static ssize_t show_humidity(struct device *dev, struct device_attribute *attr,
                              char *buf);
 
-static DEFINE_MUTEX(recv_data_lock);
-
 int ads7830_soil_humid_init_sysfs(struct ads7830_soil_humid_data *data) {
   int name_max = 32;
   char *name_buf;
@@ -49,7 +47,7 @@ int ads7830_soil_humid_init_sysfs(struct ads7830_soil_humid_data *data) {
     }
   });
 
-  mutex_init(&recv_data_lock);
+  mutex_init(&data->access_lock);
 
   dev_set_drvdata(&data->client->dev, data);
 
@@ -65,9 +63,11 @@ static ssize_t show_humidity(struct device *dev, struct device_attribute *attr,
                              char *buf) {
   struct ads7830_soil_humid_channel_data *channel = NULL;
   struct ads7830_soil_humid_data *data;
-  int err;
+  int err = 0;
 
   data = dev_get_drvdata(dev);
+
+  mutex_lock(&data->access_lock);
 
   // Find channel
   FOR_EACH_DEV_ATTR(data, {
@@ -81,22 +81,26 @@ static ssize_t show_humidity(struct device *dev, struct device_attribute *attr,
 
   if (channel == NULL) {
     LKM_PRINT_ERR(data->client, "Unable to find corresponding ADC channel\n");
-    return -ENOENT;
+    err = ENOENT;
+    goto cleanup;
   }
-
-  mutex_lock(&recv_data_lock);
 
   err = ads7830_soil_humid_receive_data(data, channel);
   if (err) {
-    LKM_PRINT_ERR(data->client, "Unable to receive data from %s\n",
+    LKM_PRINT_ERR(data->client, "Unable to receive data for %s\n",
                   attr->attr.name);
     goto cleanup;
   }
 
   err = snprintf(buf, 32, "%d\n", channel->humidity);
+  if (err) {
+    LKM_PRINT_ERR(data->client, "Unable to write data to sysfs buffer for %s\n",
+                  attr->attr.name);
+    goto cleanup;
+  }
 
 cleanup:
-  mutex_unlock(&recv_data_lock);
+  mutex_unlock(&data->access_lock);
 
   return err;
 };

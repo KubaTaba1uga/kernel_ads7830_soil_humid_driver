@@ -10,6 +10,7 @@ struct ads7830_soil_humid_channel_data {
 };
 
 struct ads7830_soil_humid_data {
+  struct mutex access_lock;
   struct i2c_client *client;
   // ADS7830 has eigth channels, so we are creating one attribute for each
   //   channel. This way we will have 8 entries in sysfs each for one sensor.
