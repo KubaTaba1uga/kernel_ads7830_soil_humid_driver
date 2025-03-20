@@ -93,7 +93,7 @@ static ssize_t show_humidity(struct device *dev, struct device_attribute *attr,
   }
 
   err = snprintf(buf, 32, "%d\n", channel->humidity);
-  if (err) {
+  if (err < 0) {
     LKM_PRINT_ERR(data->client, "Unable to write data to sysfs buffer for %s\n",
                   attr->attr.name);
     goto cleanup;
