@@ -10,6 +10,8 @@ struct ads7830_soil_humid_channel_data {
 };
 
 struct ads7830_soil_humid_data {
+  int min_output_voltage;
+  int max_output_voltage;
   struct mutex access_lock;
   struct i2c_client *client;
   // ADS7830 has eigth channels, so we are creating one attribute for each
@@ -21,5 +23,17 @@ struct ads7830_soil_humid_data {
 
 #define LKM_PRINT_ERR(client, fmt, ...)                                        \
   dev_err(&client->dev, "[%s:%d] " fmt, __FILE__, __LINE__, ##__VA_ARGS__)
+
+// We are assuming here that maximum ADC channel reading is 3.3V.
+//  This is because we connect ADC to 3.3V, if somehow that's not
+//  your case and your ADC shows maximum different value, you may
+//  be interested in changing this macro.
+#define MAX_VOLTAGE 33
+
+// We take volts from user as double digit (33 is 3.3V) but it is easier to
+//  operate on rescaled value by 1k, so we do not need to deal with floats.
+static inline int ads7830_soil_humid_rescale_volts(int volts) {
+  return volts * 1000;
+}
 
 #endif

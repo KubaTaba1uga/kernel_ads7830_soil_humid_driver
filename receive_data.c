@@ -1,7 +1,10 @@
 #include <linux/i2c.h>
 
 #include "common.h"
+#include "linux/dev_printk.h"
 #include "receive_data.h"
+
+static int convert_volts_to_bits(int volts);
 
 int ads7830_soil_humid_receive_data(
     struct ads7830_soil_humid_data *driver_data,
@@ -70,11 +73,42 @@ int ads7830_soil_humid_receive_data(
     return err;
   }
 
+  // Because sensor return value in bits we need to convert volts also
+  //  to bits to bring everything to one unit. Because
+  int max_bits = convert_volts_to_bits(driver_data->max_output_voltage -
+                                       driver_data->min_output_voltage);
+  int reading_value =
+      (u8)err - convert_volts_to_bits(driver_data->min_output_voltage);
+
+  int reversed_reading_value = max_bits - reading_value;
+
+  /* dev_info(&driver_data->client->dev, */
+  /*          "max_bits=%d, value=%d, reversed_value=%d, " */
+  /*          "convert_volts_to_bits(driver_data->min_output_voltage)=%d\n", */
+  /*          max_bits, reading_value, reversed_reading_value, */
+  /*          convert_volts_to_bits(driver_data->min_output_voltage)); */
+
   // i2c_smbus_read_byte returns data on success
   //  there is no float in kernel so we are ensuring
   //  that we end up with int between 0 and 100
   //  presenting data in procentage unit.
-  channel_data->humidity = ((u8)err * 100) / 255;
+  channel_data->humidity = (reversed_reading_value * 100) / max_bits;
+
+  if (channel_data->humidity > 100) {
+    channel_data->humidity = 100;
+  } else if (channel_data->humidity < 0) {
+    channel_data->humidity = 0;
+  }
 
   return 0;
+}
+
+// We are assuming here that `volts` arg is already rescaled.
+static int convert_volts_to_bits(int volts) {
+  int volts_per_bit;
+
+  // This is how much rescaled volts one bit represent
+  volts_per_bit = ads7830_soil_humid_rescale_volts(MAX_VOLTAGE) / 255;
+
+  return volts / volts_per_bit;
 }

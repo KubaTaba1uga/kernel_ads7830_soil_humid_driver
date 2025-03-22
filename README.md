@@ -56,11 +56,16 @@ goes closer to 0%. For sensor i bougth min was 1V and max was 2.3V. If you do no
 you can check this values via voltmeter. To know min voltage just put sensor in glass of water,
 to now it's max voltage dry it well and perform measurement.
 
-To adjust sensor calibration we have two lkm variables available:
-- INPUT_MIN_V
-- INPUT_MAX_V
+To adjust sensor calibration you have two lkm variables available:
+- mp_min_voltage_output
+- mp_min_voltage_output
 
-They can be adjusted from value 0V to value 3.3V.
+They can be adjusted from value 0V to value 3.3V, for 0 pass 0, for 3.3V pass 33.
+
+For this sensor https://mikrobot.pl/czujnik-wilgotnosci-gleby-v1-2-pojemnosciowy values i picked were:
+- mp_min_voltage_output: 10 (1V)
+- mp_min_voltage_output: 23 (2.3V)
+
 
 ## To-Do
 - Improve error handling and logging.
