@@ -82,11 +82,11 @@ int ads7830_soil_humid_receive_data(
 
   int reversed_reading_value = max_bits - reading_value;
 
-  /* dev_info(&driver_data->client->dev, */
-  /*          "max_bits=%d, value=%d, reversed_value=%d, " */
-  /*          "convert_volts_to_bits(driver_data->min_output_voltage)=%d\n", */
-  /*          max_bits, reading_value, reversed_reading_value, */
-  /*          convert_volts_to_bits(driver_data->min_output_voltage)); */
+  dev_dbg(&driver_data->client->dev,
+          "max=%d, value=%d, reversed_value=%d, "
+          "convert_volts_to_bits(driver_data->min_output_voltage)=%d\n",
+          max_bits, reading_value, reversed_reading_value,
+          convert_volts_to_bits(driver_data->min_output_voltage));
 
   // i2c_smbus_read_byte returns data on success
   //  there is no float in kernel so we are ensuring

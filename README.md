@@ -64,12 +64,20 @@ They can be adjusted from value 0V to value 3.3V, for 0 pass 0, for 3.3V pass 33
 
 For this sensor https://mikrobot.pl/czujnik-wilgotnosci-gleby-v1-2-pojemnosciowy values i picked were:
 - mp_min_voltage_output: 10 (1V)
-- mp_min_voltage_output: 23 (2.3V)
+- mp_max_voltage_output: 23 (2.3V)
 
+Printing debug messages can be helpful during calibration, to do so use
+```
+mount -t debugfs none /sys/kernel/debug
+echo 'module ads7830_soil_humid_driver +p' > /sys/kernel/debug/dynamic_debug/control
+cat /sys/devices/platform/axi/1000120000.pcie/1f00074000.i2c/i2c-1/1-0048/humidity_0
+```
 
-## To-Do
-- Improve error handling and logging.
-- Improve path for humidity_X files to be more user friendly.
+However prior to that ensure that you enabled dynamic_debug in kernel
+```
+CONFIG_DEBUG_FS=y
+CONFIG_DYNAMIC_DEBUG=y
+```
 
 ## License
 
