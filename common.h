@@ -5,20 +5,20 @@
 #include <linux/types.h>
 
 struct ads7830_soil_humid_channel_data {
-  int channel_number;
-  int humidity;
+	int channel_number;
+	int humidity;
 };
 
 struct ads7830_soil_humid_data {
-  int min_output_voltage;
-  int max_output_voltage;
-  struct mutex access_lock;
-  struct i2c_client *client;
-  // ADS7830 has eigth channels, so we are creating one attribute for each
-  //   channel. This way we will have 8 entries in sysfs each for one sensor.
-  struct device_attribute dev_attrs[8];
-  // channels_data is used to store data received from all channels.
-  struct ads7830_soil_humid_channel_data channels_data[8];
+	int min_output_voltage;
+	int max_output_voltage;
+	struct mutex access_lock;
+	struct i2c_client *client;
+	// ADS7830 has eigth channels, so we are creating one attribute for each
+	//   channel. This way we will have 8 entries in sysfs each for one sensor.
+	struct device_attribute dev_attrs[8];
+	// channels_data is used to store data received from all channels.
+	struct ads7830_soil_humid_channel_data channels_data[8];
 };
 
 #define LKM_PRINT_ERR(client, fmt, ...)                                        \
@@ -32,8 +32,9 @@ struct ads7830_soil_humid_data {
 
 // We take volts from user as double digit (33 is 3.3V) but it is easier to
 //  operate on rescaled value by 1k, so we do not need to deal with floats.
-static inline int ads7830_soil_humid_rescale_volts(int volts) {
-  return volts * 1000;
+static inline int ads7830_soil_humid_rescale_volts(int volts)
+{
+	return volts * 1000;
 }
 
 #endif
